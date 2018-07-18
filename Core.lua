@@ -8,7 +8,7 @@ local questBar
 
 --Default options
 P["QuestXP"] = {
-    ["IncludeComplete"] = false,
+    ["IncludeIncomplete"] = false,
     ["CurrentZoneOnly"] = false,
     ["QuestXPColor"] = {r = 217/255,g = 217/255,b = 0}
 }
@@ -37,9 +37,9 @@ function EQXP:InsertOptions()
             IncludeComplete = {
                 order = 2,
                 type = "toggle",
-                name = "Include Completed Quests",
-                get = function(info) return E.db.QuestXP.IncludeComplete end,
-                set = function(info, val) E.db.QuestXP.IncludeComplete = val; EQXP:Refresh() end
+                name = "Include Incomplete Quests",
+                get = function(info) return E.db.QuestXP.IncludeIncomplete end,
+                set = function(info, val) E.db.QuestXP.IncludeIncomplete = val; EQXP:Refresh() end
             },
             CurrentZoneOnly = {
                 order = 3,
@@ -52,8 +52,50 @@ function EQXP:InsertOptions()
     }
 end
 
-function EQXP:Refresh()
+function EQXP:Refresh(event)
 
+    local col = E.db.QuestXP.QuestXPColor
+    questBar:SetStatusBarColor(col.r, col.g, col.b, col.a)
+    questBar:SetMinMaxValues(0, UnitXPMax("player"))
+
+    local mapID = C_Map.GetBestMapForUnit("player")
+    local zoneName = C_Map.GetMapInfo(mapID).name
+
+    local currentXP = UnitXP("player")
+
+    local i = 1
+	local lastHeader
+    local currentQuestXPTotal = 0
+    while GetQuestLogTitle(i) do
+      local questLogTitleText, level, suggestedGroup, isHeader, isCollapsed, isComplete, isDaily, questID = GetQuestLogTitle(i)
+        if (not isHeader) then
+            local incompleteCheck = true
+            local zoneCheck = true
+
+            if (not E.db.QuestXP.IncludeIncomplete) then
+                if not isComplete then
+                    incompleteCheck = false                    
+                end
+            else
+
+            end
+
+            if E.db.QuestXP.CurrentZoneOnly then
+                if lastHeader ~= zoneName then
+                    zoneCheck = false
+                end
+            end
+
+            if incompleteCheck and zoneCheck then
+                currentQuestXPTotal = currentQuestXPTotal + GetQuestLogRewardXP(questID)
+            end
+        else
+            lastHeader = questLogTitleText
+      end
+      i = i + 1
+    end
+
+    questBar:SetValue(min(currentXP + currentQuestXPTotal, UnitXPMax("player")))
 end
 
 function EQXP:Initialize()
@@ -65,9 +107,19 @@ function EQXP:Initialize()
     questBar:SetStatusBarTexture(E.media.normTex)
     E:RegisterStatusBar(bar.questBar)
 
-    local col = E.db.QuestXP.QuestXPColor
-    questBar:SetStatusBarColor(col.r, col.g, col.b, col.a)
-    questBar:SetMinMaxValues(0, UnitXPMax("player"))
+    questBar:SetOrientation(E.db.databars.experience.orientation)
+    questBar:SetReverseFill(E.db.databars.experience.reverseFill)
+
+    questBar.eventFrame = CreateFrame("Frame")
+    questBar.eventFrame:Hide()
+    
+    questBar.eventFrame:RegisterEvent("QUEST_LOG_UPDATE")
+    questBar.eventFrame:RegisterEvent("PLAYER_XP_UPDATE")
+    questBar.eventFrame:RegisterEvent("ZONE_CHANGED")
+    questBar.eventFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+    questBar.eventFrame:RegisterEvent("UNIT_PORTRAIT_UPDATE")
+    questBar.eventFrame:SetScript("OnEvent", function(self, event) EQXP:Refresh(event) end)
+
     EQXP:Refresh()
 
     EP:RegisterPlugin(addonName, EQXP.InsertOptions)
