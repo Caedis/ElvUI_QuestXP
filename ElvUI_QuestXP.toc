@@ -1,0 +1,9 @@
+## Interface: 80000
+## Title: |cff1784d1ElvUI |rQuestXP
+## Author: Caedis
+## Version: 0.1
+## RequiredDeps: ElvUI
+## DefaultState: Enabled
+## LoadOnDemand: 0
+
+Core.lua
