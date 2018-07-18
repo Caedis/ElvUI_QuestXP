@@ -34,7 +34,7 @@ function EQXP:InsertOptions()
                      EQXP:Refresh()
                 end
             },
-            IncludeComplete = {
+            IncludeIncompleted = {
                 order = 2,
                 type = "toggle",
                 name = "Include Incomplete Quests",
@@ -76,7 +76,6 @@ function EQXP:Refresh(event)
                 if not isComplete then
                     incompleteCheck = false                    
                 end
-            else
 
             end
 
