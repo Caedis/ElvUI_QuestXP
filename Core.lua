@@ -1,16 +1,25 @@
 local E, L, V, P, G, _ =  unpack(ElvUI)
-local EQXP = E:NewModule('QuestXP', 'AceEvent-3.0')
+local EQXP = E:NewModule('QuestXP', 'AceEvent-3.0', 'AceHook-3.0')
 
 local addonName, addonTable = ...
 local EP = LibStub("LibElvUIPlugin-1.0")
+local mod = E:GetModule('DataBars');
 
 local questBar
+
+local UnitXPMax = UnitXPMax
+local UnitXP = UnitXP
+local GetMapInfo = C_Map.GetMapInfo
+local GetBestMapForUnit = C_Map.GetBestMapForUnit
+local GetQuestLogRewardXP = GetQuestLogRewardXP
+local CreateFrame = CreateFrame
 
 --Default options
 P["QuestXP"] = {
     ["IncludeIncomplete"] = false,
     ["CurrentZoneOnly"] = false,
-    ["QuestXPColor"] = {r = 217/255,g = 217/255,b = 0}
+    ["QuestXPColor"] = {r = 217/255,g = 217/255,b = 0},
+    ["Bubbles"] = true
 }
 
 function EQXP:InsertOptions()
@@ -34,15 +43,22 @@ function EQXP:InsertOptions()
                      EQXP:Refresh()
                 end
             },
-            IncludeIncompleted = {
+            Bubbles = {
                 order = 2,
+                type = "toggle",
+                name = "Bubbles",
+                get = function(info) return E.db.QuestXP.Bubbles end,
+                set = function(info, val) E.db.QuestXP.Bubbles = val; EQXP:Refresh() end
+            },
+            IncludeIncompleted = {
+                order = 3,
                 type = "toggle",
                 name = "Include Incomplete Quests",
                 get = function(info) return E.db.QuestXP.IncludeIncomplete end,
                 set = function(info, val) E.db.QuestXP.IncludeIncomplete = val; EQXP:Refresh() end
             },
             CurrentZoneOnly = {
-                order = 3,
+                order = 4,
                 type = "toggle",
                 name = "Current Zone Quests Only",
                 get = function(info) return E.db.QuestXP.CurrentZoneOnly end,
@@ -58,8 +74,8 @@ function EQXP:Refresh(event)
     questBar:SetStatusBarColor(col.r, col.g, col.b, col.a)
     questBar:SetMinMaxValues(0, UnitXPMax("player"))
 
-    local mapID = C_Map.GetBestMapForUnit("player")
-    local zoneName = C_Map.GetMapInfo(mapID).name
+    local mapID = GetBestMapForUnit("player")
+    local zoneName = GetMapInfo(mapID).name
 
     local currentXP = UnitXP("player")
 
@@ -95,7 +111,16 @@ function EQXP:Refresh(event)
     end
 
     questBar:SetValue(min(currentXP + currentQuestXPTotal, UnitXPMax("player")))
+    ElvUI_ExperienceBar.bubbles:SetWidth(ElvUI_ExperienceBar:GetWidth() - 4)
+    ElvUI_ExperienceBar.bubbles:SetHeight(ElvUI_ExperienceBar:GetHeight() - 8)
+
+    if (E.db.QuestXP.Bubbles) then
+        ElvUI_ExperienceBar.bubbles:Show()
+    else
+        ElvUI_ExperienceBar.bubbles:Hide()
+    end
 end
+
 
 function EQXP:Initialize()
 
@@ -118,6 +143,18 @@ function EQXP:Initialize()
     questBar.eventFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
     questBar.eventFrame:RegisterEvent("UNIT_PORTRAIT_UPDATE")
     questBar.eventFrame:SetScript("OnEvent", function(self, event) EQXP:Refresh(event) end)
+
+    bar.bubbles = CreateFrame("StatusBar", nil, bar)
+    bar.bubbles:SetStatusBarTexture("Interface\\AddOns\\ElvUI_QuestXP\\Textures\\bubbles")
+    bar.bubbles:SetPoint("CENTER", bar, "CENTER", 0, 0)
+    bar.bubbles:SetWidth(bar:GetWidth() - 4)
+    bar.bubbles:SetHeight(bar:GetHeight() - 8)
+    bar.bubbles:SetInside()
+
+    -- XXX: Blizz tiling breakage.
+    bar.bubbles:GetStatusBarTexture():SetHorizTile(false)
+
+    bar.bubbles:SetFrameLevel(bar:GetFrameLevel() + 4)
 
     EQXP:Refresh()
 
