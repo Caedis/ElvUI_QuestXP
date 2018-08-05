@@ -8,5 +8,4 @@
 ## X-Tukui-ProjectID: 103
 ## X-Tukui-ProjectFolders: ElvUI_QuestXP
 
-
 Core.lua
