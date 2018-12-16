@@ -145,7 +145,7 @@ function EQXP:Initialize()
     questBar.eventFrame:SetScript("OnEvent", function(self, event) EQXP:Refresh(event) end)
 
     bar.bubbles = CreateFrame("StatusBar", nil, bar)
-    bar.bubbles:SetStatusBarTexture("Interface\\AddOns\\ElvUI_QuestXP\\Textures\\bubbles")
+    bar.bubbles:SetStatusBarTexture("Interface\\AddOns\\ElvUI_QuestXP\\textures\\bubbles")
     bar.bubbles:SetPoint("CENTER", bar, "CENTER", 0, 0)
     bar.bubbles:SetWidth(bar:GetWidth() - 4)
     bar.bubbles:SetHeight(bar:GetHeight() - 8)
