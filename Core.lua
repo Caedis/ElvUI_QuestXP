@@ -70,6 +70,13 @@ end
 
 function EQXP:Refresh(event)
 
+
+    if (E.db.QuestXP.Bubbles) then
+        ElvUI_ExperienceBar.bubbles:Show()
+    else
+        ElvUI_ExperienceBar.bubbles:Hide()
+    end
+
     local col = E.db.QuestXP.QuestXPColor
     questBar:SetStatusBarColor(col.r, col.g, col.b, col.a)
     questBar:SetMinMaxValues(0, UnitXPMax("player"))
@@ -114,11 +121,7 @@ function EQXP:Refresh(event)
     ElvUI_ExperienceBar.bubbles:SetWidth(ElvUI_ExperienceBar:GetWidth() - 4)
     ElvUI_ExperienceBar.bubbles:SetHeight(ElvUI_ExperienceBar:GetHeight() - 8)
 
-    if (E.db.QuestXP.Bubbles) then
-        ElvUI_ExperienceBar.bubbles:Show()
-    else
-        ElvUI_ExperienceBar.bubbles:Hide()
-    end
+    
 end
 
 
