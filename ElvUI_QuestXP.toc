@@ -1,12 +1,10 @@
-## Interface: 80000
+## Interface: 80100
 ## Title: |cff1784d1ElvUI |rQuestXP
 ## Author: Caedis
-## Version: 0.2
+## Version: 1.0
 ## RequiredDeps: ElvUI
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
-## X-Tukui-ProjectID: 103
-## X-Tukui-ProjectFolders: ElvUI_QuestXP
 
 
 Core.lua
