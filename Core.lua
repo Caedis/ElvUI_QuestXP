@@ -77,11 +77,19 @@ function EQXP:Refresh(event)
         ElvUI_ExperienceBar.bubbles:Hide()
     end
 
-    local col = E.db.QuestXP.QuestXPColor
-    questBar:SetStatusBarColor(col.r, col.g, col.b, col.a)
-    questBar:SetMinMaxValues(0, UnitXPMax("player"))
+	
+	local maxXP = UnitXPMax("player");
+	
+    
+    questBar:SetMinMaxValues(0, maxXP);
 
     local mapID = GetBestMapForUnit("player")
+	
+	if mapID == nil then
+		return
+	end
+	
+	
     local zoneName = GetMapInfo(mapID).name
 
     local currentXP = UnitXP("player")
@@ -118,6 +126,16 @@ function EQXP:Refresh(event)
     end
 
     questBar:SetValue(min(currentXP + currentQuestXPTotal, UnitXPMax("player")))
+	
+	local col = E.db.QuestXP.QuestXPColor
+	
+	if (currentXP + currentQuestXPTotal) >= maxXP then
+		questBar:SetStatusBarColor(0/255, 255/255, 0/255, 0.5)
+	else
+		questBar:SetStatusBarColor(col.r, col.g, col.b, col.a)
+	end
+    
+	
     ElvUI_ExperienceBar.bubbles:SetWidth(ElvUI_ExperienceBar:GetWidth() - 4)
     ElvUI_ExperienceBar.bubbles:SetHeight(ElvUI_ExperienceBar:GetHeight() - 8)
 
